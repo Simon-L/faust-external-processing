@@ -38,6 +38,7 @@ target_include_directories(
 )
 
 target_compile_features(faust-base-cpp_lib PUBLIC cxx_std_17)
+target_link_libraries(faust-base-cpp_lib PRIVATE sndfile)
 
 # ---- Declare faust-base-cpp ----
 

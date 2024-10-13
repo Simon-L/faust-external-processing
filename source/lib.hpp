@@ -3,9 +3,15 @@
 #include <string>
 #include <memory>
 
+#include "faust/gui/SoundUI.h"
 #include "faust/gui/MapUI.h"
 #include "faust/gui/meta.h"
 #include "faust/dsp/dsp.h"
+
+#include <cstring>
+#include <sndfile.hh>
+
+void create_file (const char * fname, float* buffer, int length);
 
 // blocksize 4 -> 0.083 ms (12000.000 Hz)
 // blocksize 8 -> 0.167 ms (6000.000 Hz)
@@ -63,13 +69,19 @@ public:
   {
     init(48000);
     
+    SoundUI s;
+    
+    buildUserInterface(&s);
+    
     fDSP2->foobar = 30;
     
     compute(blockSize, inputs, outputs);
     
-    for (size_t i = 0; i < blockSize; i++) {
+    for (size_t i = 0; i < 128; i++) {
       printf("%d -> %f\n", i, outputs[0][i]);
     }
+    
+    create_file("/tmp/foo.wav", outputs[0], blockSize);
   }
   
   void stop()
@@ -79,7 +91,7 @@ public:
   float **inputs;
   float **outputs;
   
-  static constexpr int blockSize{512};
+  static constexpr int blockSize{8192};
 };
 
 /**
