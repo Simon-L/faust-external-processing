@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.24)
 
 include(cmake/prelude.cmake)
 
@@ -21,7 +21,22 @@ FetchContent_Declare(
   faust
   URL  https://github.com/grame-cncm/faust/archive/refs/tags/${FAUST_VERSION}.tar.gz
 )
-FetchContent_MakeAvailable(faust)
+FetchContent_Declare(
+  sst-effects
+  GIT_REPOSITORY https://github.com/Simon-L/sst-effects
+  GIT_TAG main
+)
+FetchContent_Declare(
+    sst-basic-blocks
+    GIT_REPOSITORY https://github.com/surge-synthesizer/sst-basic-blocks
+    GIT_TAG main
+)
+FetchContent_Declare(
+    sst-filters
+    GIT_REPOSITORY https://github.com/surge-synthesizer/sst-filters
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(faust sst-basic-blocks sst-filters sst-effects)
 
 # ---- Declare library ----
 
@@ -39,6 +54,7 @@ target_include_directories(
 
 target_compile_features(faust-base-cpp_lib PUBLIC cxx_std_17)
 target_link_libraries(faust-base-cpp_lib PRIVATE sndfile)
+target_link_libraries(faust-base-cpp_lib PUBLIC sst-basic-blocks sst-filters sst-effects)
 
 # ---- Declare faust-base-cpp ----
 

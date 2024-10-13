@@ -13,6 +13,7 @@ Compilation options: -a /home/xox/Sync/tr909/faust/faust-base-cpp-project/source
 #define FAUSTFLOAT float
 #endif 
 
+/* link with : "" */
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -33,30 +34,59 @@ Compilation options: -a /home/xox/Sync/tr909/faust/faust-base-cpp-project/source
 #define RESTRICT __restrict__
 #endif
 
+class mydspSIG0 {
+	
+  private:
+	
+	int iVec0[2];
+	int iRec0[2];
+	
+  public:
+	
+	int getNumInputsmydspSIG0() {
+		return 0;
+	}
+	int getNumOutputsmydspSIG0() {
+		return 1;
+	}
+	
+	void instanceInitmydspSIG0(int sample_rate) {
+		for (int l0 = 0; l0 < 2; l0 = l0 + 1) {
+			iVec0[l0] = 0;
+		}
+		for (int l1 = 0; l1 < 2; l1 = l1 + 1) {
+			iRec0[l1] = 0;
+		}
+	}
+	
+	void fillmydspSIG0(int count, float* table) {
+		for (int i1 = 0; i1 < count; i1 = i1 + 1) {
+			iVec0[0] = 1;
+			iRec0[0] = (iVec0[1] + iRec0[1]) % 65536;
+			table[i1] = std::sin(9.58738e-05f * float(iRec0[0]));
+			iVec0[1] = iVec0[0];
+			iRec0[1] = iRec0[0];
+		}
+	}
+
+};
+
+static mydspSIG0* newmydspSIG0() { return (mydspSIG0*)new mydspSIG0(); }
+static void deletemydspSIG0(mydspSIG0* dsp) { delete dsp; }
+
+static float ftbl0mydspSIG0[65536];
 
 class mydsp : public dsp_2 {
 	
  private:
 	
-	Soundfile* fSoundfile0;
+	int iVec1[2];
 	int fSampleRate;
 	float fConst0;
-	int iConst1;
-	int iVec0[2];
-	int iRec2[2];
-	int iVec1[2];
-	int iRec3[2];
-	float fConst2;
-	float fRec0[2];
-	int iRec1[2];
-	
-	void allocate() {
-		fSoundfile0 = 0;
-	}
+	float fRec1[2];
 	
  public:
 	mydsp() {
-		allocate();
 	}
 	
 	void metadata(Meta* m) { 
@@ -65,63 +95,46 @@ class mydsp : public dsp_2 {
 		m->declare("basics.lib/version", "1.19.1");
 		m->declare("compile_options", "-a /home/xox/Sync/tr909/faust/faust-base-cpp-project/source/faust_arch.cpp -lang cpp -ct 1 -scn dsp_2 -es 1 -mcd 16 -mdd 1024 -mdy 33 -single -ftz 0");
 		m->declare("filename", "mydsp1.dsp");
-		m->declare("interpolators.lib/name", "Faust Interpolator Library");
-		m->declare("interpolators.lib/version", "1.3.1");
 		m->declare("maths.lib/author", "GRAME");
 		m->declare("maths.lib/copyright", "GRAME");
 		m->declare("maths.lib/license", "LGPL with exception");
 		m->declare("maths.lib/name", "Faust Math Library");
 		m->declare("maths.lib/version", "2.8.0");
 		m->declare("name", "mydsp1");
+		m->declare("oscillators.lib/name", "Faust Oscillator Library");
+		m->declare("oscillators.lib/version", "1.5.1");
 		m->declare("platform.lib/name", "Generic Platform Library");
 		m->declare("platform.lib/version", "1.3.0");
-		m->declare("signals.lib/name", "Faust Signal Routing Library");
-		m->declare("signals.lib/version", "1.6.0");
-		m->declare("soundfiles.lib/name", "Faust Soundfile Library");
-		m->declare("soundfiles.lib/version", "1.7.0");
 	}
 
 	virtual int getNumInputs() {
 		return 0;
 	}
 	virtual int getNumOutputs() {
-		return 1;
+		return 2;
 	}
 	
 	static void classInit(int sample_rate) {
+		mydspSIG0* sig0 = newmydspSIG0();
+		sig0->instanceInitmydspSIG0(sample_rate);
+		sig0->fillmydspSIG0(65536, ftbl0mydspSIG0);
+		deletemydspSIG0(sig0);
 	}
 	
 	virtual void instanceConstants(int sample_rate) {
 		fSampleRate = sample_rate;
-		fConst0 = std::min<float>(1.92e+05f, std::max<float>(1.0f, float(fSampleRate)));
-		iConst1 = int(2.0f * fConst0);
-		fConst2 = 1.0f / fConst0;
+		fConst0 = 2e+03f / std::min<float>(1.92e+05f, std::max<float>(1.0f, float(fSampleRate)));
 	}
 	
 	virtual void instanceResetUserInterface() {
-		if (uintptr_t(fSoundfile0) == 0) {
-			fSoundfile0 = defaultsound;
-		}
 	}
 	
 	virtual void instanceClear() {
-		for (int l0 = 0; l0 < 2; l0 = l0 + 1) {
-			iVec0[l0] = 0;
-		}
-		for (int l1 = 0; l1 < 2; l1 = l1 + 1) {
-			iRec2[l1] = 0;
-		}
 		for (int l2 = 0; l2 < 2; l2 = l2 + 1) {
 			iVec1[l2] = 0;
 		}
 		for (int l3 = 0; l3 < 2; l3 = l3 + 1) {
-			iRec3[l3] = 0;
-		}
-		for (int l4 = 0; l4 < 2; l4 = l4 + 1) {
-			fRec0[l4] = 0.0f;
-		}
-		for (int l5 = 0; l5 < 2; l5 = l5 + 1) {
-			iRec1[l5] = 0;
+			fRec1[l3] = 0.0f;
 		}
 	}
 	
@@ -146,41 +159,22 @@ class mydsp : public dsp_2 {
 	
 	virtual void buildUserInterface(UI* ui_interface) {
 		ui_interface->openVerticalBox("mydsp1");
-		ui_interface->addSoundfile("home/xox/Prod/Samples/RV_FUTURE_DANCEHALL_HITS/RV_FUTURE_DANCEHALL/FDH_SOUNDS_&_FX/FDH_DRUM_HITS/SNARES/FDH_Snare_2.wav", "{'home/xox/Prod/Samples/RV_FUTURE_DANCEHALL_HITS/RV_FUTURE_DANCEHALL/FDH_SOUNDS_&_FX/FDH_DRUM_HITS/SNARES/FDH_Snare_2.wav'}", &fSoundfile0);
 		ui_interface->closeBox();
 	}
 	
 	virtual void compute(int count, FAUSTFLOAT** RESTRICT inputs, FAUSTFLOAT** RESTRICT outputs) {
 		FAUSTFLOAT* output0 = outputs[0];
-		Soundfile* fSoundfile0ca = fSoundfile0;
-		int* fSoundfile0ca_ra0 = fSoundfile0ca->fSR;
-		float fSlow0 = fConst2 * float(fSoundfile0ca_ra0[0]);
-		float fSlow1 = std::floor(fSlow0);
-		int iSlow2 = int(fSlow0);
-		int* fSoundfile0ca_le0 = fSoundfile0ca->fLength;
-		int iSlow3 = fSoundfile0ca_le0[0] + -1;
-		int* fSoundfile0ca_of0 = fSoundfile0ca->fOffset;
-		float** fSoundfile0ca_bu0 = static_cast<float**>(fSoundfile0ca->fBuffers);
-		float* fSoundfile0ca_bu_ch0 = fSoundfile0ca_bu0[0];
+		FAUSTFLOAT* output1 = outputs[1];
 		for (int i0 = 0; i0 < count; i0 = i0 + 1) {
-			iVec0[0] = 1;
-			iRec2[0] = (iVec0[1] + iRec2[1]) % iConst1;
-			int iTemp0 = iRec2[0] <= iRec2[1];
-			iVec1[0] = iTemp0;
-			iRec3[0] = ((iTemp0) ? iTemp0 : iRec3[1]);
-			int iTemp1 = iRec3[0] * (iTemp0 <= iVec1[1]);
-			float fTemp2 = fSlow0 + (fRec0[1] - fSlow1);
-			fRec0[0] = (fSlow0 + (fRec0[1] - std::floor(fTemp2) - fSlow1)) * float(iTemp1);
-			iRec1[0] = iTemp1 * (iSlow2 + iRec1[1] + int(fTemp2));
-			output0[i0] = FAUSTFLOAT(fSoundfile0ca_bu_ch0[fSoundfile0ca_of0[0] + std::max<int>(0, std::min<int>(iRec1[0], iSlow3))]);
-			iVec0[1] = iVec0[0];
-			iRec2[1] = iRec2[0];
+			iVec1[0] = 1;
+			float fTemp0 = ((1 - iVec1[1]) ? 0.0f : fConst0 + fRec1[1]);
+			fRec1[0] = fTemp0 - std::floor(fTemp0);
+			float fTemp1 = ftbl0mydspSIG0[std::max<int>(0, std::min<int>(int(65536.0f * fRec1[0]), 65535))];
+			output0[i0] = FAUSTFLOAT(process_fx(fTemp1));
+			output1[i0] = FAUSTFLOAT(fTemp1);
 			iVec1[1] = iVec1[0];
-			iRec3[1] = iRec3[0];
-			fRec0[1] = fRec0[0];
-			iRec1[1] = iRec1[0];
+			fRec1[1] = fRec1[0];
 		}
-		fSoundfile0 = fSoundfile0ca;
 	}
 
 };
