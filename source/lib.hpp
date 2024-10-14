@@ -39,12 +39,9 @@ public:
     
     float process_fx(float input) {
         input_buffer[accumulator] = input;
-        printf("%d\n", accumulator);
-        printf("\treturn output_buffer[%d]\n", accumulator);
         float out = output_buffer[accumulator];
         accumulator++;
         if (accumulator > 3) {
-            printf("\tProcessing one block, content of output changes\n");
             fx->processStereo((const float *)&input_buffer[0], (const float *)&input_buffer[0],
                 output_buffer, output_buffer, 1);
             accumulator = 0;
