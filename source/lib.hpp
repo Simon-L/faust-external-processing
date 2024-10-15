@@ -8,10 +8,6 @@
 #include "faust/gui/meta.h"
 #include "faust/dsp/dsp.h"
 
-#include "sst/voice-effects/distortion/BitCrusher.h"
-#include "sst/voice-effects/utilities/VolumeAndPan.h"
-#include "sst/voice-effects/dynamics/Compressor.h"
-
 #include "sstfx.hpp"
 
 #include <cstring>
@@ -27,13 +23,24 @@ public:
     float* input_buffer = new float[4];
     float* output_buffer = new float[4];
     
-    std::unique_ptr<sst::voice_effects::utilities::VolumeAndPan<SSTFX::FxConfig>> fx;
+    std::unique_ptr<sst::voice_effects::utilities::VolumeAndPan<SstVfx::VfxConfig>> vfx;
+    std::unique_ptr<sst::effects::reverb2::Reverb2<FxConfig>> fx;
+    
+    FxConfig::GlobalStorage gs = FxConfig::GlobalStorage(48000);
+    FxConfig::EffectStorage es = FxConfig::EffectStorage();
     
     dsp_2():dsp() {
-        fx = std::make_unique<sst::voice_effects::utilities::VolumeAndPan<SSTFX::FxConfig>>();
-        fx->sampleRate = 48000;
-        fx->initVoiceEffectParams();
-        fx->setFloatParam(sst::voice_effects::utilities::VolumeAndPan<SSTFX::FxConfig>::fpVolume, -6);
+        vfx = std::make_unique<sst::voice_effects::utilities::VolumeAndPan<SstVfx::VfxConfig>>();
+        vfx->sampleRate = 48000;
+        vfx->initVoiceEffectParams();
+        vfx->setFloatParam(sst::voice_effects::utilities::VolumeAndPan<SstVfx::VfxConfig>::fpVolume, -6);
+
+        fx = std::make_unique<sst::effects::reverb2::Reverb2<FxConfig>>(&gs, &es, nullptr);
+        
+        for (int i = 0; i < sst::effects::reverb2::Reverb2<FxConfig>::numParams; ++i)
+            fx->paramStorage[i] = fx->paramAt(i).defaultVal;
+        
+        fx->initialize();
     }
     virtual ~dsp_2 () {}
     
@@ -42,8 +49,14 @@ public:
         float out = output_buffer[accumulator];
         accumulator++;
         if (accumulator > 3) {
-            fx->processStereo((const float *)&input_buffer[0], (const float *)&input_buffer[0],
-                output_buffer, output_buffer, 1);
+            // vfx->processStereo((const float *)&input_buffer[0], (const float *)&input_buffer[0],
+            //     output_buffer, output_buffer, 1);
+            
+            fx->processBlock(input_buffer, input_buffer);
+            for (size_t s = 0; s < 4; s++) {
+                output_buffer[s] = input_buffer[s];
+            }
+            
             accumulator = 0;
         }
         return out;
@@ -91,10 +104,10 @@ public:
         // for (size_t i = 0; i < 128; i++) {
         //   printf("%d -> %f\n", i, outputs[0][i]);
         // }
-        // 
-        // create_file("/tmp/foo.wav", outputs[0], blockSize);
         
-        create_dat_file(getNumOutputs(), blockSize, outputs);
+        create_file("/tmp/out.wav", outputs[0], blockSize);
+        
+        // create_dat_file(getNumOutputs(), blockSize, outputs);
         
     }
     
@@ -105,7 +118,7 @@ public:
     float **inputs;
     float **outputs;
     
-    static constexpr int blockSize{128};
+    static constexpr int blockSize{48000 * 2};
 };
 
 struct library

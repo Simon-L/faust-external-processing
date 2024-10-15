@@ -22,7 +22,7 @@ void create_file(const char * fname, float* buffer, int length)
     printf ("Creating file named '%s'\n", fname) ;
     
     file = SndfileHandle (fname, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_FLOAT, channels, srate) ;
-    file.write (buffer, 4096) ;
+    file.write (buffer, length) ;
 }
 
 void create_dat_file(int num_outputs, int length, float**buffer) {
